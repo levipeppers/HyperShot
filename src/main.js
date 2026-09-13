@@ -24,7 +24,22 @@ const mobileFireButton = document.querySelector('#mobile-fire');
 const mobileExitButton = document.querySelector('#mobile-exit');
 let installPrompt = null;
 
-registerSW({ immediate: true });
+let updateServiceWorker;
+updateServiceWorker = registerSW({
+  immediate: true,
+  onNeedRefresh() {
+    updateServiceWorker(true);
+  },
+  onRegisteredSW(_serviceWorkerUrl, registration) {
+    if (!registration) return;
+    const checkForUpdate = () => registration.update().catch(() => {});
+    window.addEventListener('focus', checkForUpdate);
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden) checkForUpdate();
+    });
+    window.setInterval(checkForUpdate, 60 * 60 * 1000);
+  }
+});
 
 window.addEventListener('beforeinstallprompt', (event) => {
   event.preventDefault();
@@ -752,7 +767,7 @@ function resizeGame() {
   camera.aspect = viewportWidth / viewportHeight;
   camera.updateProjectionMatrix();
   renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
-  renderer.setSize(viewportWidth, viewportHeight, false);
+  renderer.setSize(viewportWidth, viewportHeight);
 }
 
 let resizeFrame = 0;
