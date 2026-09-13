@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#05080d" />
+    <title>HyperShot</title>
+  </head>
+  <body>
+    <main id="game">
+      <div id="hud">
+        <div class="brand">HYPER<span>SHOT</span></div>
+        <div class="score-block">
+          <span class="label">SCORE</span>
+          <strong id="score">0000</strong>
+        </div>
+        <div class="status"><i></i><span>LIVE RANGE</span></div>
+      </div>
+
+      <div id="crosshair" aria-hidden="true">
+        <span class="dot"></span>
+        <span class="bar top"></span>
+        <span class="bar right"></span>
+        <span class="bar bottom"></span>
+        <span class="bar left"></span>
+      </div>
+
+      <div id="hit-marker" aria-hidden="true"><span></span><span></span></div>
+
+      <div id="player-health" aria-label="Player health">
+        <span>HEALTH</span>
+        <div class="player-health-track"><i id="player-health-fill"></i></div>
+        <strong id="player-health-value">1000</strong>
+      </div>
+
+      <section id="menu">
+        <div id="main-menu" class="menu-view">
+          <div class="menu-rule"></div>
+          <p class="kicker">COMBAT SIMULATION // 01</p>
+          <h1>HYPER<span>SHOT</span></h1>
+          <p class="mission">Clear the signal drones. Move fast. Miss less.</p>
+          <p id="defeat-message" hidden>MISSION FAILED // YOU LOST</p>
+          <button id="deploy" type="button">DEPLOY <span>CLICK</span></button>
+          <button id="classes" type="button">CLASSES</button>
+          <div class="controls">
+            <div><kbd>WASD</kbd><span>MOVE</span></div>
+            <div><kbd>MOUSE</kbd><span>LOOK + FIRE</span></div>
+            <div><kbd>U</kbd><span>RELEASE</span></div>
+          </div>
+        </div>
+
+        <div id="classes-menu" class="menu-view" hidden>
+          <div class="menu-rule"></div>
+          <p class="kicker">SELECT OPERATIVE</p>
+          <h2>CLASSES</h2>
+          <div class="class-list">
+            <button class="class-option locked" type="button" data-class="spy" data-price="200" aria-pressed="false"><span class="class-number">01</span><strong>SPY</strong><span class="class-price">200 PTS</span></button>
+            <button class="class-option locked" type="button" data-class="soldier" data-price="300" aria-pressed="false"><span class="class-number">02</span><strong>SOLDIER</strong><span class="class-price">300 PTS</span></button>
+            <button class="class-option selected" type="button" data-class="sniper" data-price="0" aria-pressed="true"><span class="class-number">03</span><strong>SNIPER</strong><span class="class-price">OWNED</span></button>
+          </div>
+          <p id="class-message" aria-live="polite">SNIPER EQUIPPED</p>
+          <button id="classes-back" type="button">&larr; BACK</button>
+        </div>
+      </section>
+
+      <div id="release-hint">CLICK TO RE-ENGAGE <span>·</span> U TO RELEASE</div>
+      <div id="damage-flash"></div>
+    </main>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
