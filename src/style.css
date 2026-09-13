@@ -155,6 +155,26 @@ body.locked #release-hint { opacity: 0; }
 #damage-flash.active { animation: player-hit .32s ease-out; }
 @keyframes player-hit { 0% { opacity: .95; } 100% { opacity: 0; } }
 
+#mobile-controls { display: none; }
+
+@media (pointer: coarse) {
+  html, body, #game, canvas { touch-action: none; overscroll-behavior: none; -webkit-user-select: none; user-select: none; }
+  body.locked #mobile-controls { position: fixed; z-index: 9; inset: 0; display: block; pointer-events: none; }
+  .virtual-stick { position: absolute; bottom: max(22px, env(safe-area-inset-bottom)); width: 116px; height: 116px; border: 2px solid rgba(255,255,255,.28); border-radius: 50%; background: rgba(3,6,10,.3); box-shadow: inset 0 0 24px rgba(0,0,0,.3); pointer-events: auto; touch-action: none; }
+  .virtual-stick::before, .virtual-stick::after { content: ''; position: absolute; background: rgba(255,255,255,.12); }
+  .virtual-stick::before { left: 15px; right: 15px; top: 50%; height: 1px; }
+  .virtual-stick::after { top: 15px; bottom: 15px; left: 50%; width: 1px; }
+  .virtual-stick i { position: absolute; left: 50%; top: 50%; width: 48px; height: 48px; transform: translate(-50%, -50%); border: 2px solid rgba(255,255,255,.7); border-radius: 50%; background: rgba(76,232,224,.3); box-shadow: 0 0 18px rgba(76,232,224,.28); }
+  #move-stick { left: max(22px, env(safe-area-inset-left)); }
+  #look-stick { right: max(22px, env(safe-area-inset-right)); }
+  #mobile-fire { position: absolute; right: max(54px, calc(env(safe-area-inset-right) + 32px)); bottom: max(154px, calc(env(safe-area-inset-bottom) + 132px)); width: 58px; height: 58px; padding: 0; border: 2px solid var(--acid); border-radius: 50%; background: rgba(3,6,10,.48); box-shadow: 0 0 20px rgba(200,255,54,.2); pointer-events: auto; touch-action: none; }
+  #mobile-fire span { display: block; width: 12px; height: 12px; margin: auto; border: 2px solid var(--acid); border-radius: 50%; box-shadow: 0 0 8px var(--acid); }
+  #mobile-fire:active { transform: scale(.92); background: rgba(200,255,54,.2); }
+  #mobile-exit { position: absolute; top: max(72px, calc(env(safe-area-inset-top) + 62px)); right: max(18px, env(safe-area-inset-right)); width: 42px; height: 42px; padding: 0; border: 1px solid rgba(255,255,255,.4); border-radius: 50%; color: #fff; background: rgba(3,6,10,.45); font: 400 27px 'Barlow Condensed'; line-height: 1; pointer-events: auto; touch-action: none; }
+  #release-hint, .controls { display: none; }
+  #player-health { top: calc(68px + env(safe-area-inset-top)); bottom: auto; }
+}
+
 @media (max-width: 640px) {
   #hud { height: 58px; padding: 0 16px; }
   .brand { font-size: 17px; }
@@ -168,4 +188,10 @@ body.locked #release-hint { opacity: 0; }
   h2 { margin-bottom: 20px; }
   #player-health { left: 16px; bottom: 18px; grid-template-columns: auto 92px auto; gap: 7px; }
   .player-health-track { width: 92px; }
+}
+
+@media (max-width: 640px) and (pointer: coarse) {
+  #player-health { top: calc(66px + env(safe-area-inset-top)); bottom: auto; }
+  .virtual-stick { width: 104px; height: 104px; }
+  #mobile-fire { bottom: max(138px, calc(env(safe-area-inset-bottom) + 116px)); }
 }

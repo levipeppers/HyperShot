@@ -18,6 +18,10 @@ const playerHealthFill = document.querySelector('#player-health-fill');
 const playerHealthValue = document.querySelector('#player-health-value');
 const damageFlash = document.querySelector('#damage-flash');
 const defeatMessage = document.querySelector('#defeat-message');
+const moveStick = document.querySelector('#move-stick');
+const lookStick = document.querySelector('#look-stick');
+const mobileFireButton = document.querySelector('#mobile-fire');
+const mobileExitButton = document.querySelector('#mobile-exit');
 let installPrompt = null;
 
 registerSW({ immediate: true });
@@ -299,8 +303,12 @@ const ENEMY_DAMAGE = 100;
 const projectileGeometry = new THREE.SphereGeometry(0.12, 10, 8);
 const projectileMaterial = new THREE.MeshBasicMaterial({ color: 0xff4d37 });
 const enemyProjectiles = [];
+const touchMove = new THREE.Vector2();
+const touchLook = new THREE.Vector2();
+const isTouchDevice = matchMedia('(pointer: coarse)').matches || navigator.maxTouchPoints > 0;
 let playerHealth = MAX_PLAYER_HEALTH;
 let isDefeated = false;
+let mobilePlaying = false;
 let isFiring = false;
 let automaticFireCooldown = 0;
 let muzzleFlashTime = 0;
@@ -399,12 +407,31 @@ function resetRun() {
   clearEnemyProjectiles();
 }
 
+function hasGameControl() {
+  return isLocked() || mobilePlaying;
+}
+
+function resetTouchInput() {
+  touchMove.set(0, 0);
+  touchLook.set(0, 0);
+  moveStick.querySelector('i').style.transform = 'translate(-50%, -50%)';
+  lookStick.querySelector('i').style.transform = 'translate(-50%, -50%)';
+  isFiring = false;
+}
+
+function setMobilePlaying(active) {
+  mobilePlaying = active;
+  document.body.classList.toggle('locked', active || isLocked());
+  if (!active) resetTouchInput();
+}
+
 function defeatPlayer() {
   isDefeated = true;
   defeatMessage.hidden = false;
   classesMenu.hidden = true;
   mainMenu.hidden = false;
   clearEnemyProjectiles();
+  setMobilePlaying(false);
   if (document.pointerLockElement) document.exitPointerLock();
 }
 
@@ -422,7 +449,8 @@ function isLocked() {
 }
 
 function requestControl() {
-  renderer.domElement.requestPointerLock();
+  if (isTouchDevice) setMobilePlaying(true);
+  else renderer.domElement.requestPointerLock();
 }
 
 deployButton.addEventListener('click', () => {
@@ -470,20 +498,23 @@ menu.querySelectorAll('.class-option').forEach((option) => {
   });
 });
 renderer.domElement.addEventListener('click', () => {
+  if (isTouchDevice) return;
   if (!isLocked()) requestControl();
   else if (selectedClass !== 'soldier') shoot();
 });
 renderer.domElement.addEventListener('pointerdown', (event) => {
-  if (event.button !== 0 || !isLocked() || selectedClass !== 'soldier') return;
+  if (isTouchDevice || event.button !== 0 || !isLocked() || selectedClass !== 'soldier') return;
   isFiring = true;
   automaticFireCooldown = SOLDIER_FIRE_INTERVAL;
   shoot();
 });
-document.addEventListener('pointerup', () => { isFiring = false; });
+document.addEventListener('pointerup', (event) => {
+  if (event.pointerType === 'mouse') isFiring = false;
+});
 
 document.addEventListener('pointerlockchange', () => {
-  document.body.classList.toggle('locked', isLocked());
-  if (!isLocked()) {
+  document.body.classList.toggle('locked', hasGameControl());
+  if (!hasGameControl()) {
     keys.clear();
     velocity.set(0, 0, 0);
     isFiring = false;
@@ -499,6 +530,63 @@ document.addEventListener('mousemove', (event) => {
   camera.rotation.set(pitch, yaw, 0);
 });
 
+function bindVirtualStick(element, output) {
+  const knob = element.querySelector('i');
+  let activePointer = null;
+
+  function updateStick(event) {
+    const bounds = element.getBoundingClientRect();
+    const radius = bounds.width * 0.34;
+    let offsetX = event.clientX - (bounds.left + bounds.width / 2);
+    let offsetY = event.clientY - (bounds.top + bounds.height / 2);
+    const distance = Math.hypot(offsetX, offsetY);
+    if (distance > radius) {
+      offsetX *= radius / distance;
+      offsetY *= radius / distance;
+    }
+    output.set(offsetX / radius, offsetY / radius);
+    knob.style.transform = `translate(calc(-50% + ${offsetX}px), calc(-50% + ${offsetY}px))`;
+  }
+
+  element.addEventListener('pointerdown', (event) => {
+    activePointer = event.pointerId;
+    element.setPointerCapture(activePointer);
+    updateStick(event);
+  });
+  element.addEventListener('pointermove', (event) => {
+    if (event.pointerId === activePointer) updateStick(event);
+  });
+  const release = (event) => {
+    if (event.pointerId !== activePointer) return;
+    activePointer = null;
+    output.set(0, 0);
+    knob.style.transform = 'translate(-50%, -50%)';
+  };
+  element.addEventListener('pointerup', release);
+  element.addEventListener('pointercancel', release);
+}
+
+bindVirtualStick(moveStick, touchMove);
+bindVirtualStick(lookStick, touchLook);
+
+mobileFireButton.addEventListener('pointerdown', (event) => {
+  event.preventDefault();
+  if (!mobilePlaying) return;
+  mobileFireButton.setPointerCapture(event.pointerId);
+  if (selectedClass === 'soldier') {
+    isFiring = true;
+    automaticFireCooldown = SOLDIER_FIRE_INTERVAL;
+  }
+  shoot();
+});
+mobileFireButton.addEventListener('pointerup', () => { isFiring = false; });
+mobileFireButton.addEventListener('pointercancel', () => { isFiring = false; });
+mobileExitButton.addEventListener('pointerdown', (event) => {
+  event.preventDefault();
+  setMobilePlaying(false);
+  clearEnemyProjectiles();
+});
+
 document.addEventListener('keydown', (event) => {
   if (event.code === 'KeyU') {
     document.exitPointerLock();
@@ -510,6 +598,9 @@ document.addEventListener('keyup', (event) => keys.delete(event.code));
 window.addEventListener('blur', () => {
   keys.clear();
   isFiring = false;
+});
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) resetTouchInput();
 });
 
 function shoot() {
@@ -594,7 +685,7 @@ function updateEnemyBots(delta, elapsed) {
     target.rotation.x = 0;
     target.userData.healthBar.position.set(target.position.x, target.position.y + 2.35, target.position.z);
 
-    if (!isLocked() || !target.visible || isDefeated) return;
+    if (!hasGameControl() || !target.visible || isDefeated) return;
     target.userData.fireCooldown -= delta;
     if (target.userData.fireCooldown <= 0) {
       spawnEnemyProjectile(target);
@@ -604,8 +695,8 @@ function updateEnemyBots(delta, elapsed) {
 }
 
 function updateMovement(delta) {
-  const forward = Number(keys.has('KeyW')) - Number(keys.has('KeyS'));
-  const strafe = Number(keys.has('KeyD')) - Number(keys.has('KeyA'));
+  const forward = THREE.MathUtils.clamp(Number(keys.has('KeyW')) - Number(keys.has('KeyS')) - touchMove.y, -1, 1);
+  const strafe = THREE.MathUtils.clamp(Number(keys.has('KeyD')) - Number(keys.has('KeyA')) + touchMove.x, -1, 1);
   moveDirection.set(strafe, 0, -forward);
   if (moveDirection.lengthSq() > 0) moveDirection.normalize().applyAxisAngle(new THREE.Vector3(0, 1, 0), yaw);
 
@@ -637,7 +728,13 @@ function animate() {
   requestAnimationFrame(animate);
   timer.update();
   const delta = Math.min(timer.getDelta(), 0.05);
-  if (isLocked()) {
+  if (mobilePlaying) {
+    yaw -= touchLook.x * delta * 2.35;
+    pitch -= touchLook.y * delta * 1.8;
+    pitch = THREE.MathUtils.clamp(pitch, -Math.PI / 2.15, Math.PI / 2.15);
+    camera.rotation.set(pitch, yaw, 0);
+  }
+  if (hasGameControl()) {
     updateMovement(delta);
     updateAutomaticFire(delta);
     updateEnemyProjectiles(delta);
