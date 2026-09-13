@@ -16,8 +16,16 @@
 html, body, #game {
   width: 100%;
   height: 100%;
+  min-height: 100%;
   margin: 0;
   overflow: hidden;
+}
+
+@supports (height: 100dvh) {
+  html, body, #game {
+    width: 100dvw;
+    height: 100dvh;
+  }
 }
 
 body { background: #05080d; }
@@ -28,6 +36,8 @@ canvas {
   display: block;
   width: 100%;
   height: 100%;
+  max-width: 100dvw;
+  max-height: 100dvh;
 }
 
 #game::after {

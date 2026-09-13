@@ -746,11 +746,29 @@ function animate() {
   renderer.render(scene, camera);
 }
 
-window.addEventListener('resize', () => {
-  camera.aspect = innerWidth / innerHeight;
+function resizeGame() {
+  const viewportWidth = Math.round(visualViewport?.width ?? document.documentElement.clientWidth);
+  const viewportHeight = Math.round(visualViewport?.height ?? document.documentElement.clientHeight);
+  camera.aspect = viewportWidth / viewportHeight;
   camera.updateProjectionMatrix();
-  renderer.setSize(innerWidth, innerHeight);
   renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
-});
+  renderer.setSize(viewportWidth, viewportHeight, false);
+}
+
+let resizeFrame = 0;
+function scheduleResize() {
+  cancelAnimationFrame(resizeFrame);
+  resizeFrame = requestAnimationFrame(() => {
+    resizeGame();
+    requestAnimationFrame(resizeGame);
+  });
+}
+
+window.addEventListener('resize', scheduleResize);
+window.addEventListener('orientationchange', scheduleResize);
+visualViewport?.addEventListener('resize', scheduleResize);
+visualViewport?.addEventListener('scroll', scheduleResize);
+screen.orientation?.addEventListener('change', scheduleResize);
+resizeGame();
 
 animate();
