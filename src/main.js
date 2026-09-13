@@ -1,10 +1,12 @@
 import * as THREE from 'three';
+import { registerSW } from 'virtual:pwa-register';
 import './style.css';
 
 const game = document.querySelector('#game');
 const menu = document.querySelector('#menu');
 const deployButton = document.querySelector('#deploy');
 const classesButton = document.querySelector('#classes');
+const installButton = document.querySelector('#install-app');
 const classesBackButton = document.querySelector('#classes-back');
 const mainMenu = document.querySelector('#main-menu');
 const classesMenu = document.querySelector('#classes-menu');
@@ -16,6 +18,28 @@ const playerHealthFill = document.querySelector('#player-health-fill');
 const playerHealthValue = document.querySelector('#player-health-value');
 const damageFlash = document.querySelector('#damage-flash');
 const defeatMessage = document.querySelector('#defeat-message');
+let installPrompt = null;
+
+registerSW({ immediate: true });
+
+window.addEventListener('beforeinstallprompt', (event) => {
+  event.preventDefault();
+  installPrompt = event;
+  installButton.hidden = false;
+});
+
+installButton.addEventListener('click', async () => {
+  if (!installPrompt) return;
+  await installPrompt.prompt();
+  await installPrompt.userChoice;
+  installPrompt = null;
+  installButton.hidden = true;
+});
+
+window.addEventListener('appinstalled', () => {
+  installPrompt = null;
+  installButton.hidden = true;
+});
 
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x87ceeb);

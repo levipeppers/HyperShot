@@ -125,8 +125,10 @@ h2 { margin: 4px 0 30px; font-size: clamp(54px, 9vw, 92px); line-height: .9; fon
 #deploy { min-width: 190px; height: 52px; border: 0; border-left: 4px solid #fff; color: #071005; background: var(--acid); font: 900 20px 'Barlow Condensed'; cursor: pointer; clip-path: polygon(0 0, 92% 0, 100% 28%, 100% 100%, 0 100%); }
 #deploy span { margin-left: 20px; font: 700 9px 'Space Mono'; opacity: .55; }
 #deploy:hover { background: #fff; }
-#classes { min-width: 190px; height: 38px; margin-top: 9px; border: 1px solid rgba(255,255,255,.38); color: #fff; background: rgba(3,6,10,.55); font: 800 15px 'Barlow Condensed'; cursor: pointer; }
-#classes:hover { border-color: var(--cyan); color: var(--cyan); background: rgba(3,6,10,.78); }
+#classes, #install-app { min-width: 190px; height: 38px; margin-top: 9px; border: 1px solid rgba(255,255,255,.38); color: #fff; background: rgba(3,6,10,.55); font: 800 15px 'Barlow Condensed'; cursor: pointer; }
+#classes:hover, #install-app:hover { border-color: var(--cyan); color: var(--cyan); background: rgba(3,6,10,.78); }
+#install-app { border-color: var(--acid); color: var(--acid); }
+#install-app[hidden] { display: none; }
 .class-list { display: grid; grid-template-columns: repeat(3, minmax(120px, 1fr)); gap: 10px; width: 100%; }
 .class-option { position: relative; display: grid; place-items: center; height: 112px; border: 1px solid rgba(255,255,255,.22); color: #fff; background: rgba(3,6,10,.62); cursor: pointer; }
 .class-option strong { font: italic 900 24px 'Barlow Condensed'; }
